@@ -1,5 +1,6 @@
 ### Curl Commands
 `curl -iX POST http://[Cluster IP]:[Node Port]/hello -d "Wes"`
+
 `curl -iX GET http://[Cluster IP]:[Node Port]/hello/{nameId}`
 
 ### Build application Docker image
