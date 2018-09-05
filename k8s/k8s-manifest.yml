@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-app-deployment
+  labels:
+    app: hello-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-app
+  template:
+    metadata:
+      labels:
+        app: hello-app
+    spec:
+      containers:
+      - name: hello-app
+        image: hello-app:1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-service
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 31317
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: hello-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 31318
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  serviceName: postgres-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:10.5
+        env:
+        - name: PG_DATA
+          value: /etc/postgres
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - name: postgres
+          mountPath: /etc/postgres
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "postgres"
+      resources:
+        requests:
+          storage: 128Mi
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: postgres
+provisioner: k8s.io/minikube-hostpath
