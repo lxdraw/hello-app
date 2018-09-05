@@ -3,6 +3,9 @@
 
 `curl -iX GET http://[Cluster IP]:[Node Port]/hello/{nameId}`
 
+### Build Application
+`./gradlew clean assemble`
+
 ### Build application Docker image
 `docker build -t hello-app:1.0 .`
 
